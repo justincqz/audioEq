@@ -5,6 +5,7 @@ var wNodes = 50;
 var nodeWidth = 23;
 var colourScheme = [];
 var eqField = new EqField([]);
+var rangeOffset = 10;
 
 function preload(){
   sound = loadSound('https://a.tumblr.com/tumblr_mm1qr5F2lU1rn72uoo1.mp3#_=_')
@@ -13,11 +14,12 @@ function preload(){
 function setup() {
   cnv = createCanvas(hCanvas,wCanvas);
   cnv.mouseClicked(togglePlay);
-  colourScheme.push(color(33, 38, 56, 100));
-  colourScheme.push(color(63, 60, 82, 100));
-  colourScheme.push(color(107, 85, 102, 100));
-  colourScheme.push(color(140, 116, 105, 100));
+  console.log(hToArray(135));
   colourScheme.push(color(204, 166, 112, 100));
+  colourScheme.push(color(140, 116, 105, 100));
+  colourScheme.push(color(107, 85, 102, 100));
+  colourScheme.push(color(63, 60, 82, 100));
+  colourScheme.push(color(33, 38, 56, 100));
 
   eqField.init();
   fft = new p5.FFT();
@@ -25,22 +27,23 @@ function setup() {
 }
 
 function draw() {
-  background(colourScheme[0]);
+  background(colourScheme[4]);
   var spectrum = fft.analyze();
   eqField.update(spectrum);
 }
 
 function hToArray(h){
-  var sc = h/4;
+  var input = h > 100 ? h: 100;
+  var sc = (map (input, 100, 255, 0, vNodes))/4;
   var rArray = [];
   for (var i = 0; i < 4; i++){
     for (var times = 0; times < sc; times++){
-      rArray.push(i + 1);
+      rArray.push(i);
     }
   }
   var len = rArray.length;
   for (var left = 0; left < (vNodes - len); left++){
-    rArray.push(0);
+    rArray.push(4);
   }
   return rArray;
 }
@@ -51,7 +54,7 @@ function EqNode(x, y){
   this.value = 3;
 
   this.update = function(newVal){
-    if (this.value != newVal){
+    if (this.value != newVal || this.value != 4){
       this.value = newVal;
       this.show();
     }
@@ -84,7 +87,8 @@ function EqField(){
 
   this.update = function(spectrum){
     for (var i = 0; i < this.freqMap.length; i++){
-      this.freqMap[i] = hToArray(spectrum[i]);
+      var index = map(i, 0, wNodes, 0, spectrum.length);
+      this.freqMap[i] = hToArray(spectrum[i + rangeOffset]);
     }
     this.show();
   }
